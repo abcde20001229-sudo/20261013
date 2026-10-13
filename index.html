@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <!-- 設定網頁使用 UTF-8 編碼 -->
+    <meta charset="UTF-8">
+
+    <!-- 讓網頁在電腦、平板與手機上響應式顯示 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 設定網頁標題 -->
+    <title>p5.js 簡易指令測驗</title>
+
+    <!-- 預先連線至 Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <!-- 預先連線至 Google Fonts 靜態資源 -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- 載入中文 LXGW WenKai TC 與英文數字 Isometra -->
+    <link href="https://fonts.googleapis.com/css2?family=Isometra&family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
+
+    <!-- 載入 p5.js 程式庫 -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+
+    <!-- 載入測驗程式 -->
+    <script src="sketch.js"></script>
+
+    <!-- 設定網頁基本樣式 -->
+    <style>
+      /* 設定整個網頁的尺寸與基本外觀 */
+      html,
+      body {
+        /* 移除瀏覽器預設外距 */
+        margin: 0;
+
+        /* 移除瀏覽器預設內距 */
+        padding: 0;
+
+        /* 設定網頁寬度 */
+        width: 100%;
+
+        /* 設定網頁高度 */
+        height: 100%;
+
+        /* 隱藏捲軸避免全螢幕畫布產生捲動 */
+        overflow: hidden;
+
+        /* 設定網頁背景顏色 */
+        background: #ffffff;
+      }
+
+      /* 設定 p5.js 畫布的定位方式 */
+      canvas {
+        /* 讓畫布以區塊方式顯示 */
+        display: block;
+
+        /* 讓畫布固定在視窗左上角 */
+        position: fixed;
+
+        /* 設定畫布左側位置 */
+        left: 0;
+
+        /* 設定畫布上方位置 */
+        top: 0;
+
+        /* 將畫布放在文字介面下方 */
+        z-index: -1;
+      }
+
+      /* 設定測驗主要容器 */
+      .quiz-container {
+        /* 使用邊界盒模型 */
+        box-sizing: border-box;
+
+        /* 設定容器最小高度 */
+        min-height: 100vh;
+
+        /* 設定容器寬度 */
+        width: min(90vw, 760px);
+
+        /* 設定容器水平置中 */
+        margin: 0 auto;
+
+        /* 設定容器內距 */
+        padding: clamp(16px, 4vw, 40px);
+
+        /* 使用彈性盒排版 */
+        display: flex;
+
+        /* 設定內容垂直排列 */
+        flex-direction: column;
+
+        /* 將內容垂直置中 */
+        justify-content: center;
+
+        /* 設定子元素寬度拉伸 */
+        align-items: stretch;
+
+        /* 設定子元素間距 */
+        gap: clamp(10px, 2vh, 20px);
+
+        /* 讓介面位於畫布上方 */
+        position: relative;
+
+        /* 設定介面層級 */
+        z-index: 1;
+
+        /* 設定文字水平置中 */
+        text-align: center;
+
+        /* 中文預設使用 LXGW WenKai TC */
+        font-family: "LXGW WenKai TC", serif;
+      }
+
+      /* 設定標題基本樣式 */
+      .quiz-container h1 {
+        /* 移除標題預設外距 */
+        margin: 0;
+
+        /* 設定標題顏色 */
+        color: #023047;
+
+        /* 設定標題粗細 */
+        font-weight: 700;
+      }
+
+      /* 設定選項容器 */
+      .options-container {
+        /* 使用彈性盒排版 */
+        display: flex;
+
+        /* 設定選項垂直排列 */
+        flex-direction: column;
+
+        /* 設定選項間距 */
+        gap: clamp(8px, 2vh, 16px);
+      }
+
+      /* 設定所有按鈕的盒模型與觸控行為 */
+      button {
+        /* 使用邊界盒模型 */
+        box-sizing: border-box;
+
+        /* 設定觸控操作不延遲 */
+        touch-action: manipulation;
+
+        /* 防止文字被選取 */
+        user-select: none;
+      }
+
+      /* 設定選項按鈕 */
+      .option-button {
+        /* 設定選項按鈕寬度 */
+        width: 100%;
+
+        /* 設定選項按鈕最小高度 */
+        min-height: clamp(48px, 7vh, 68px);
+
+        /* 設定選項按鈕內距 */
+        padding: 10px 16px;
+
+        /* 設定選項按鈕邊框 */
+        border: 2px solid #6c757d;
+
+        /* 設定選項按鈕圓角 */
+        border-radius: 12px;
+
+        /* 設定選項按鈕背景 */
+        background: #e9ecef;
+
+        /* 設定選項按鈕文字顏色 */
+        color: #212529;
+
+        /* 設定選項按鈕中文字型 */
+        font-family: "LXGW WenKai TC", serif;
+
+        /* 設定選項按鈕文字大小 */
+        font-size: clamp(16px, 3vw, 23px);
+
+        /* 設定滑鼠游標 */
+        cursor: pointer;
+      }
+
+      /* 設定控制按鈕 */
+      .control-button {
+        /* 設定控制按鈕寬度 */
+        width: min(45vw, 180px);
+
+        /* 將控制按鈕水平置中 */
+        align-self: center;
+
+        /* 設定控制按鈕內距 */
+        padding: 10px 24px;
+
+        /* 設定控制按鈕邊框 */
+        border: none;
+
+        /* 設定控制按鈕圓角 */
+        border-radius: 8px;
+
+        /* 設定控制按鈕背景 */
+        background: #219ebc;
+
+        /* 設定控制按鈕文字顏色 */
+        color: #ffffff;
+
+        /* 設定控制按鈕中文字型 */
+        font-family: "LXGW WenKai TC", serif;
+
+        /* 設定控制按鈕文字大小 */
+        font-size: clamp(16px, 3vw, 22px);
+
+        /* 設定滑鼠游標 */
+        cursor: pointer;
+      }
+
+      /* 設定英文與數字專用字型 */
+      .latin-text {
+        /* 使用 Isometra 字型 */
+        font-family: "Isometra", sans-serif !important;
+      }
+
+      /* 設定中文與非拉丁文字專用字型 */
+      .chinese-text {
+        /* 使用 LXGW WenKai TC 字型 */
+        font-family: "LXGW WenKai TC", serif !important;
+      }
+
+      /* 設定停用按鈕仍保持清楚可見 */
+      button:disabled {
+        /* 保留完整不透明度 */
+        opacity: 1;
+
+        /* 停用滑鼠游標 */
+        cursor: default;
+      }
+
+      /* 設定小螢幕直向顯示 */
+      @media (max-width: 480px) {
+        /* 減少小螢幕容器內距 */
+        .quiz-container {
+          padding: 14px 12px;
+          gap: 9px;
+        }
+
+        /* 減少小螢幕選項內距 */
+        .option-button {
+          padding: 8px 10px;
+        }
+      }
+
+      /* 設定小螢幕橫向顯示 */
+      @media (max-height: 520px) and (orientation: landscape) {
+        /* 讓橫向手機內容從上方開始排列 */
+        .quiz-container {
+          justify-content: flex-start;
+          min-height: auto;
+          padding-top: 10px;
+          padding-bottom: 10px;
+          gap: 6px;
+        }
+
+        /* 縮小橫向手機選項間距 */
+        .options-container {
+          gap: 5px;
+        }
+
+        /* 縮小橫向手機選項高度 */
+        .option-button {
+          min-height: 38px;
+          padding-top: 4px;
+          padding-bottom: 4px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- p5.js 會在此頁面建立畫布與測驗介面 -->
+  </body>
+</html>
